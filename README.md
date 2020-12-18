@@ -5,10 +5,11 @@ PDF merger for Laravel inspired by another package, created for personal use. Te
 ## Advantages
 * Also works with PDF versions above `1.4`
 * Works with `PHP 7`
+* Added configuration for `temp` folder and `gs` binary
 
 ## Installation
 ```bash
- $ composer require grofgraf/laravel-pdf-merger
+ $ composer require jorrenh/laravel-pdf-merger
 ```
 
 ## Configuration
@@ -16,26 +17,33 @@ Make the following changes to the main configuration file located at `config/app
 ```php
 'providers' => [
    ...
-   GrofGraf\LaravelPDFMerger\Providers\PDFMergerServiceProvider::class
+   JorrenH\LaravelPDFMerger\Providers\PDFMergerServiceProvider::class
 ],
 
 'aliases' => [
    ...
-   'PDFMerger' => GrofGraf\LaravelPDFMerger\Facades\PDFMergerFacade::class
+   'PDFMerger' => JorrenH\LaravelPDFMerger\Facades\PDFMergerFacade::class
 ]
 ```
 
-> When merging PDFs versions above 1.4 or PDF strings, a temporary PDF will be created during the process and stored in `storage/tmp` directory, therefore you may need to create it beforehand.
-> Also, note that this package requires Ghostscript installed on the server in order to functiona properly with PDF versions 1.5+. [Install Guide](https://www.ghostscript.com/doc/9.20/Install.htm)
+> When merging PDFs versions above 1.4 or PDF strings, a temporary PDF will be created during the process and stored in the configured `temp` directory, which is created if it does not exist.
+> Also, note that this package requires Ghostscript installed on the server and configured in the config in order to function properly with PDF versions 1.5+. [Install Guide](https://www.ghostscript.com/doc/9.20/Install.htm)
+
+> Note: Windows users should configure the gswinXXc.exe binary which is the commandline version of the program.
 
 
 
 ## Usage
 
-You can add PDFs for merging, by specifying a file path of PDF with `addPathToPDF` method, or adding PDF file as string with `addPDFString` method. The second argument of both methods is array of selected pages (`'all'` for all pages) and the third argument is PDFs orientation (portrait or landscape).
+To get the PDF Merger instance you may use the registered facade or the `PDFMergerFacade` directly.
 ```php
-$merger->addPathToPDF('/path/to/pdf', 'all', 'P');
-$merger->addPDFString(file_get_contents('path/to/pdf'), ['1', '2'], 'L')
+$merger = PDFMerger::init();
+```
+
+You can add PDFs for merging, by specifying a file path of PDF with `addPDF` method, or adding PDF file as string with `addString` method. The second argument of both methods is array of selected pages (`'all'` for all pages) and the third argument is PDFs orientation (`P`ortrait or `L`andscape). The second and third argument of both methods are optional and default to `'all'` and `'P'` respectively.
+```php
+$merger->addPDF('/path/to/pdf', 'all', 'P');
+$merger->addString(file_get_contents('path/to/pdf'), ['1', '2'], 'L')
 ```
 
 You can set a merged PDF name by using `setFileName` method.
@@ -43,7 +51,7 @@ You can set a merged PDF name by using `setFileName` method.
 $merger->setFileName('merger.pdf');
 ```
 
-In the end, finnish process with `merge` or `duplexMerge` method and use one of the output options for the merged PDF. The difference bwetween two methods is, that `duplexMerge` adds blank page after each merged PDF, if it has odd number of pages.
+Once you're done adding pages to the PDF, merge them with `merge` or `duplexMerge` method and use one of the output options for the merged PDF. The difference between two methods is, that `duplexMerge` adds blank page after each merged PDF, if it has an odd number of pages to enable duplex printing.
 
 Available output options are:
   * `inline()`
@@ -53,20 +61,36 @@ Available output options are:
 
 ```php
 $merger->merge();
-$merger->inline();
+$merger->inline(); /* output option */
 ```
 
 Example usage
 ```php
 $merger = \PDFMerger::init();
-$merger->addPathToPDF(base_path('/vendor/grofgraf/laravel-pdf-merger/examples/one.pdf'), [2], 'P');
-$merger->addPDFString(file_get_contents(base_path('/vendor/grofgraf/laravel-pdf-merger/examples/two.pdf')), 'all', 'L');
+$merger->addPDF(base_path('/vendor/jorrenh/laravel-pdf-merger/examples/one.pdf'), [2], 'P');
+$merger->addString(file_get_contents(base_path('/vendor/jorrenh/laravel-pdf-merger/examples/two.pdf')), 'all', 'L');
 $merger->merge();
 $merger->save(base_path('/public/pdfs/merged.pdf'));
 ```
 
+## Configuration
+The default configuration of this package is listed below. If you want to make changes to any of the default values, you can publish the default config to your laravel installation.
+```bash
+$ php artisan vendor:publish --provider="JorrenH\LaravelPDFMerger\Providers\PDFMergerServiceProvider"
+```
+
+```php
+// Default configuration
+'temp' => storage_path('app/temp/'),
+'compatibility' => [
+    'enabled' => true,
+    'binary' => env('GS_BINARY', '/usr/local/bin/gs'),
+]
+```
+
 ## Authors
-* [GrofGraf](https://github.com/GrofGraf)
+* [GrofGraf](https://github.com/GrofGraf) (adaptation to Webklex' LaravelPDFMerger)
+* [JorrenH](https://github.com/JorrenH) (added configuration)
 
 
 ## Credits

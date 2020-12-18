@@ -1,9 +1,9 @@
 <?php
 
-namespace GrofGraf\LaravelPDFMerger\Providers;
+namespace JorrenH\LaravelPDFMerger\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use GrofGraf\LaravelPDFMerger\PDFMerger;
+use JorrenH\LaravelPDFMerger\PDFMerger;
 
 class PDFMergerServiceProvider extends ServiceProvider
 {
@@ -14,7 +14,9 @@ class PDFMergerServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        $this->publishes([
+            __DIR__.'/../../config/pdfmerger.php' => config_path('pdfmerger.php'),
+        ]);
     }
 
     /**
@@ -25,8 +27,7 @@ class PDFMergerServiceProvider extends ServiceProvider
     public function register()
     {
       $this->app->singleton('PDFMerger', function ($app) {
-          $pdfMerger = new PDFMerger($app['files']);
-          return $pdfMerger;
+          return new PDFMerger($app['files']);
       });
     }
 }
