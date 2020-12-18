@@ -1,6 +1,5 @@
 {
     "name": "jorrenh/laravel-pdf-merger",
-    "version": "1.0.1",
     "type": "library",
     "description": "Package for Laravel that merges multiple PDFs into one.",
     "keywords": [
