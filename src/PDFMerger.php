@@ -46,9 +46,7 @@ class PDFMerger
     public function __construct(Filesystem $filesystem)
     {
         $this->filesystem = $filesystem;
-        $this->fpdi = new Fpdi();
         $this->tmpFiles = collect();
-        $this->files = collect();
     }
 
     /**
@@ -70,6 +68,9 @@ class PDFMerger
      */
     public function init()
     {
+        $this->fpdi = new Fpdi();
+        $this->files = collect();
+
         return $this;
     }
 
@@ -170,18 +171,27 @@ class PDFMerger
     }
 
     /**
-     * Merges your provided PDFs and outputs to specified location.
+     * Merges the provided PDFs using duplex format onto the allocated FPDI instance.
      * @param string $orientation
      *
-     * @return void
+     * @return $this
      *
-     * @throws \Exception if there are now PDFs to merge
+     * @throws \Exception if there are no PDFs to merge
      */
     public function duplexMerge($orientation = 'P')
     {
-        $this->merge($orientation, true);
+        return $this->merge($orientation, true);
     }
 
+    /**
+     * Merges the provided PDFs onto the allocated FPDI instance.
+     * @param string $orientation
+     * @param false $duplex
+     *
+     * @return $this
+     *
+     * @throws \Exception if there are no PDFs to merge
+     */
     public function merge($orientation = 'P', $duplex = false)
     {
         if ($this->files->count() == 0) {
@@ -215,6 +225,7 @@ class PDFMerger
                 $fpdi->AddPage($file['orientation'], [$size['width'], $size['height']]);
             }
         }
+        return $this;
     }
 
     /**
